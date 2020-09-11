@@ -1,6 +1,7 @@
 import cv2
 import glob
-import os
+import os, sys
+import numpy as np
 
 def rename_files(path):
     # path = input('请输入文件路径(结尾加上/)：')
@@ -22,13 +23,20 @@ def rename_files(path):
     print('rename process finished!')
 
 def Image2Video(fps, image_size, image_path, output_path):
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-    videoWriter = cv2.VideoWriter(output_path + 'Video_equirectangular.mp4', fourcc, fps, (image_size[0], image_size[1]))  # 最后一个是保存图片的尺寸
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     imgs = glob.glob(image_path)
     imgs.sort()
+
+    videoWriter = cv2.VideoWriter(output_path + 'video_snakes.mp4', fourcc, fps, (image_size[1], image_size[0]))  # 最后一个是保存图片的尺寸
+
     # print(imgs)
     for imgname in imgs:
         frame = cv2.imread(imgname)
+        size = np.array(np.shape(frame))
+        if not (image_size == size[:2]).all():
+            print("image size do not match!")
+            sys.exit()
         videoWriter.write(frame)
 
     print('image to video succeeded!')
@@ -37,7 +45,10 @@ def Image2Video(fps, image_size, image_path, output_path):
 
 def Video2Image(video_path, output_path):
     vc = cv2.VideoCapture(video_path) #读入视频文件
-    os.makedirs(outpath)
+    try:
+        os.makedirs(outpath)
+    except:
+        print("folder already existed")
     c=0
     rval=vc.isOpened()
     #timeF = 1  #视频帧计数间隔频率
@@ -55,11 +66,12 @@ def Video2Image(video_path, output_path):
     vc.release()
 
 if __name__ == '__main__':
-    fps = 30  # 保存视频的FPS，可以适当调整
-    size = [1280, 720]
-    image_path = "/home/taungdrier/Documents/map_building/cache/*.png"
+    fps = 60  # 保存视频的FPS，可以适当调整
+    size = np.array([1080, 1920])
+    image_path = "/home/taungdrier/Desktop/video/*.jpg"
     input_path = '/home/taungdrier/Desktop/mapping/map1/'
-    video_path = '/home/taungdrier/Desktop/VID_20200728_174435.mp4'
+    # video_path = '/home/taungdrier/Desktop/VID_20200728_174435.mp4'
+    video_path = "/home/taungdrier/Pictures/snakes.mp4"
     outpath = '/home/taungdrier/Desktop/'
 
     # rename_files(input_path)
