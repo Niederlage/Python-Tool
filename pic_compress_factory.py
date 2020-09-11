@@ -3,9 +3,9 @@ import os
 from PIL import Image
 
 # 源目录
-myPath = 'C:/Users/53276/Desktop/MA/map_building'
+myPath = '/home/taungdrier/Desktop'
 # 输出目录
-outPath = 'C:/Users/53276/Desktop/pic_out/'
+outPath = '/home/taungdrier/Desktop'
 
 
 def processImage(filesource, destsource, name, imgtype):
@@ -20,7 +20,7 @@ def processImage(filesource, destsource, name, imgtype):
     im = Image.open(name)
     # 缩放比例
     print(im.size[0])
-    rate = max(im.size[0] / 1280.0 if im.size[0] > 1280 else 0, im.size[1] / 720.0 if im.size[1] > 720.0 else 0)
+    rate = max(im.size[0] / 100.0 if im.size[0] > 100 else 0, im.size[1] / 100.0 if im.size[1] > 100.0 else 0)
     if rate:
         im.thumbnail((im.size[0] / rate, im.size[1] / rate))
     im.save(destsource + name, imgtype)
