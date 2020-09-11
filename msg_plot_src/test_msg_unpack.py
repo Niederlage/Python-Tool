@@ -10,6 +10,28 @@ def quaternion2Rot(quart_list):
     r_list = [R.from_quat(i).as_matrix() for i in quart_list]
     return np.array(r_list)
 
+def quaternion2Euler(quart_list):
+    r_list = [R.from_quat(i).as_euler('zyx', degrees=True) for i in quart_list]
+    return np.array(r_list)
+
+def angle_constraint(theta_list):
+    quat_list = []
+    for i in range(len(theta_list)):
+        ta = theta_list[i, 0]
+        tb = theta_list[i, 1]
+        tc = theta_list[i, 2]
+        if abs(ta) > 178:
+            theta_list[i, 0] = np.sign(ta) * (180. - abs(ta))
+        if abs(tb) > 178:
+            theta_list[i, 1] = np.sign(tb) * (180. - abs(tb))
+        if abs(tc) > 178:
+            theta_list[i, 2] = np.sign(tc) * (180. - abs(tc))
+        r = R.from_rotvec(theta_list[i])
+        quat_list.append(r.as_quat())
+
+    return np.array(quat_list)
+
+
 def pose_2_SE3(pose):
     trans = pose[:, :3]
     rot = quaternion2Rot(pose[:, 3:])
@@ -110,7 +132,7 @@ def plot_animation(keyframe_undists):
             'key_release_event',
             lambda event: [exit(0) if event.key == 'escape' else None])
         # for i in range(point_num):
-        ax.scatter(unidists[:, 0], unidists[:, 1], label='Feather points in one frame', color='b', marker='o',
+        ax.scatter(unidists[:, 0], unidists[:, 1], label='Feather points in one frame', color='purple', marker='o',
                    alpha=0.5)
 
         ax.set_xlabel('X')
@@ -124,17 +146,18 @@ def plot_animation(keyframe_undists):
     plt.show()
 
 
-def plot_pose(pose_cw):
-    # pose = np.zeros((np.shape(pose_cw)[0],np.shape(pose_cw)[1]-1))
-    zw = pose_cw[pose_cw[:, 0].argsort()]  # 按第'1'列排序
+def plot_pose(pose_cw, rot_trans=True):
 
-    pose_matrix = pose_2_SE3(zw[:, 2:])
+    if rot_trans:
+        pose_matrix = pose_2_SE3(pose_cw)
 
-    pose_ = pose_matrix[0]
-    pose_w = np.copy(pose_[:3, 3])
-    for i in range(len(pose_matrix)):
-        pose_ = pose_matrix[i].dot(pose_)
-        pose_w = np.vstack((pose_w, pose_[:3, 3]))
+        pose_ = pose_matrix[0]
+        pose_w = np.copy(pose_[:3, 3])
+        for i in range(len(pose_matrix)):
+            pose_ = pose_matrix[i].dot(pose_)
+            pose_w = np.vstack((pose_w, pose_[:3, 3]))
+    else:
+        pose_w = pose_cw[:, :3]
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
@@ -143,6 +166,9 @@ def plot_pose(pose_cw):
     # surf = ax.plot_surface(X,Y,Z,cmap=cm.coolwarm,
     #                    linewidth=0, antialiased=False,alpha = 0.5)
     ax.plot(pose_w[:, 0], pose_w[:, 1], pose_w[:, 2], "o-", label='pose points')
+    ax.scatter(pose_w[0, 0], pose_w[0, 1], pose_w[0, 2], color="red")
+    ax.scatter(pose_w[10, 0], pose_w[10, 1], pose_w[10, 2], color="red")
+    ax.scatter(pose_w[-1, 0], pose_w[-1, 1], pose_w[-1, 2], color="purple")
     ax.legend()  # 画一条空间曲线
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -190,22 +216,38 @@ def plot_baseline(baseline):
 
 if __name__ == '__main__':
     path = 'test_simu_equirectangular_resident.msg'
-    # landmarks, keyframe_scale, keyframe_pose_cw, keyframe_undists = msg_unpack_to_array(path)
-    # np.save('landmarks.npy',landmarks)
-    # np.save('keyframe_scale.npy',keyframe_scale)
-    # np.save('keyframe_pose_cw.npy',keyframe_pose_cw)
-    # np.save('keyframe_unidists.npy',keyframe_undists[6])
+    SAVE_MSG = False
+    PLOT_POSE = True
+    PLOT_LANDMARKS = False
+    PLOT_LANDMARKS_3D = True
+    PLOT_ANIMATION = False
 
-    # lm = np.load('landmarks.npy')
-    # kf_scale = np.load('keyframe_scale.npy')
-    kf_pose_cw = np.load('keyframe_pose_cw.npy')
-    # kf_undists = np.load('keyframe_unidists.npy')
 
-    # plot_landmarks(landmarks)
-    # plot_2D_Landmarks(landmarks)
-    # plot_baseline(keyframe_scale)
-    plot_pose(kf_pose_cw)
-    # plot_unidists(kf_undists)
-    # plot_animation(keyframe_undists)
+    if SAVE_MSG:
+        landmarks, keyframe_scale, keyframe_pose_cw, keyframe_undists = msg_unpack_to_array(path)
+        np.save('landmarks.npy',landmarks)
+        np.save('keyframe_scale.npy',keyframe_scale)
+        np.save('keyframe_pose_cw.npy',keyframe_pose_cw)
+        np.save('keyframe_unidists.npy',keyframe_undists[6])
+        if PLOT_ANIMATION:
+            plot_animation(keyframe_undists)
+
+
+    if PLOT_POSE:
+        kf_pose_cw = np.load('keyframe_pose_cw.npy')
+        # theta = quaternion2Euler(kf_pose_cw[:, 5:])
+        # quat = angle_constraint(theta)
+        # kf_pose_cw[:, 5:] = quat
+        # t2 = quaternion2Euler(quat)
+        zw = kf_pose_cw[kf_pose_cw[:, 0].argsort()]  # 按第'1'列排序
+        plot_pose(zw[:, 2:], rot_trans=True)
+
+    if PLOT_LANDMARKS:
+        lm = np.load('landmarks.npy')
+        if PLOT_LANDMARKS_3D:
+            plot_landmarks(lm)
+        else:
+            plot_2D_Landmarks(lm)
+
 
     print(1)
