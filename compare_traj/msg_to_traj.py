@@ -191,9 +191,10 @@ class Msg_to_Traj:
 
 
 if __name__ == '__main__':
-    path = 'test_simu_equirectangular_resident.msg'
+    # path = 'test_simu_equirectangular_resident.msg'
+    path = 'resident_EQT_0p5.msg'
     folderpath = 'saved_data/from_msg_data/'
-    SAVE_MSG = False
+    SAVE_MSG = True
     PLOT_POSE = True
     PLOT_LANDMARKS = False
     PLOT_LANDMARKS_3D = True
@@ -207,7 +208,7 @@ if __name__ == '__main__':
 
         except:
             print('folder already exist ...')
-        np.savez_compressed(folderpath + 'saved_traj', landmarks=landmarks, keyframe_scale=keyframe_scale,
+        np.savez_compressed(folderpath + 'saved_resident_EQT_0p5', landmarks=landmarks, keyframe_scale=keyframe_scale,
                             keyframe_pose_cw=keyframe_pose_cw)
         # np.save(folderpath + 'landmarks.npy', landmarks)
         # np.save(folderpath + 'keyframe_scale.npy', keyframe_scale)
@@ -217,7 +218,7 @@ if __name__ == '__main__':
         if PLOT_ANIMATION:
             m2t.plot_animation(keyframe_undists)
 
-    load_data = np.load(folderpath + 'saved_traj.npz')
+    load_data = np.load(folderpath + 'saved_resident_EQT_0p5.npz')
     print('file loaded successfully...')
 
     if PLOT_POSE:

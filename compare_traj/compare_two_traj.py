@@ -108,6 +108,9 @@ def plot_traj(pose_b, pose_m):
     # fig.colorbar(surf, shrink=0.5, aspect=5)
     # plt.show()
 
+def get_corresponding_frame(m_list, b_list):
+    a = m_list[:, 2]
+
 
 def main():
     # msgpath = 'test_simu_equirectangular_resident.msg'
@@ -121,7 +124,7 @@ def main():
 
     # loading msg data
     if LOAD_MSGDATA:
-        load_data = np.load(msgfolderpath + 'saved_traj.npz')
+        load_data = np.load(msgfolderpath + 'saved_resident_EQT_0p5.npz')
         print('file loaded successfully...')
         kf_pose_cw = load_data['keyframe_pose_cw']
 
@@ -130,8 +133,10 @@ def main():
 
     m_pose = kf_pose_cw[kf_pose_cw[:, 0].argsort()]  # 按第'1'列排序
     m_pose = msgtraj.get_trajectory(m_pose[:, 2:])
-    m_traj = m_pose[:, ::2]  # (82, 2)
     m_baseline = msgtraj.cal_baseline(m_pose)
+
+    # adjust map orientation
+    m_traj = m_pose[:, ::2]  # (82, 2)
     m_traj[:, 1] = -m_traj[:, 1]
 
     # loading blender data
@@ -145,6 +150,7 @@ def main():
 
     if PLOT_BASELINE:
         plot_baseline(b_baseline, m_baseline)
+
     plt.show()
 
 if __name__ == '__main__':
