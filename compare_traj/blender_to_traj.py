@@ -42,7 +42,7 @@ class Blender_to_Traj:
     def cal_baseline(self, traj):
         diff_list = np.diff(traj, axis=0)
         dis_seq = []
-        for i in range(1, len(diff_list)):
+        for i in range(len(diff_list)):
             dis_seq.append(np.linalg.norm(diff_list[i]))
             # print('d{order} = {num:.2f}m'.format(order=i, num=dis_list[i-1]))
         return np.array(dis_seq)
