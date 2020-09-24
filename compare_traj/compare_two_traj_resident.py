@@ -130,17 +130,17 @@ def plot_all(traj_b, traj_m, baseline_b, baseline_m, scalar_list, ave):
     ax.grid(alpha=.4)
     ax.grid(True)
 
-    ax.set_ylim(0, 16)
+    ax.set_ylim(0, 8)  # skip3 16
     b_sum = 0
     for i, _ in enumerate(baseline_b):
         b_sum += baseline_b[i] ** 2
     b_RMSE = np.sqrt(b_sum / len(baseline_b))
     b_str = 'Groud Truth baseline:{:.3f}m'.format(b_RMSE)
-    plt.text(0, 14, b_str, fontsize=14)
+    plt.text(0, 7, b_str, fontsize=14) # skip3 14
 
     ##################### plot groud truth distribution ########################################
     ax = fig.add_subplot(232)
-    counts, bins = np.histogram(baseline_b)
+    counts, bins = np.histogram(baseline_b, bins=30)
     ax.hist(bins[:-1], bins, weights=counts, facecolor='tab:red', alpha=0.75)
     ax.set_ylabel("frequency", fontsize=12)
     ax.tick_params(axis='y')  # , labelcolor='tab:blue'
@@ -177,11 +177,11 @@ def plot_all(traj_b, traj_m, baseline_b, baseline_m, scalar_list, ave):
         m_sum += baseline_m[i] ** 2
     m_RMSE = np.sqrt(m_sum / len(baseline_m))
     m_str = 'OpenVSLAM baseline:{:.3f}m'.format(m_RMSE)
-    plt.text(0, 1.75, m_str, fontsize=14)
-    ax.set_ylim(0,1.95)
+    plt.text(0, 0.75, m_str, fontsize=14)  #skip3 1.75
+    ax.set_ylim(0, 0.9)  # skip3 1.95
     ##################### draw groud truth trajectory ########################################
     ax = fig.add_subplot(235)
-    counts, bins = np.histogram(baseline_m)
+    counts, bins = np.histogram(baseline_m, bins=30)
     ax.hist(bins[:-1], bins, weights=counts, facecolor='tab:blue', alpha=0.75)
     ax.set_ylabel("frequency", fontsize=12)
     ax.tick_params(axis='y')
@@ -195,14 +195,17 @@ def plot_all(traj_b, traj_m, baseline_b, baseline_m, scalar_list, ave):
     ax.set_title('scalar compare', fontsize=16)
     ax.set_xlabel("keyframe", fontsize=12)
     s_str = 'scalar error mean:{:.3f}'.format(ave)
-    plt.text(0, 9, s_str, fontsize=14)
-    ax.set_ylim(0., 10)
+    plt.text(0, 9.1, s_str, fontsize=14) # skip3 9
+    ax.set_ylim(8.4, 9.3)  # skip3 0,10
 
 
 def main():
     # msgpath = 'test_simu_equirectangular_resident.msg'
-    msgpath = 'resident_EQT_0p5.msg'
+    # msgpath = 'resident_EQT_0p5.msg'
+    msgpath = 'resident_EQT_0p5_skip0_kp2000_noloop.msg'
+    # msgpath = 'uni_EQT_1200_1p05.msg'
     blenderpath = 'Camera_Resident_ideal_blender.csv'
+    # blenderpath = 'Camera_Uni_ideal_blender.csv'
     msgfolderpath = 'saved_data/from_msg_data/'
     blenderfolderpath = 'saved_data/from_blender_csv/'
 
@@ -226,17 +229,17 @@ def main():
     # adjust map orientation
     m_traj = m_traj[:, ::2]  # (82, 2)
     m_traj[:, 1] = -m_traj[:, 1]
-    m_traj = blendertraj.rot_traj(m_traj, np.pi * 2 / 4)
+    m_traj = blendertraj.rot_traj(m_traj, np.pi * 2 / 4)  # resident pi * 2/4 #
     # loading blender data
     b_pose = blendertraj.csv_to_pose()
     b_traj = b_pose[:, 1:3]
-    b_traj = blendertraj.rot_traj(b_traj, -np.pi * 0 / 4) # (1537, 2)
+    b_traj = blendertraj.rot_traj(b_traj, -np.pi * 0 / 4)  # resident pi * 0/4 #
     b_baseline = blendertraj.cal_baseline(b_pose[:, 1:4])
     start_bias = b_traj[0, :]
 
     # calculate scalar koefficient
-    b_traj_cp = get_corresponding_frame(b_pose, m_pose)
-    b_traj_cp = blendertraj.rot_traj(b_traj_cp, -np.pi * 0 / 4)
+    b_traj_cp = get_corresponding_frame(b_pose, m_pose, skip_fr=1)
+    b_traj_cp = blendertraj.rot_traj(b_traj_cp - start_bias, np.pi * 0 / 4)   # resident pi * 0/4 #
     br_baseline = blendertraj.cal_baseline(b_traj_cp)
     scalar, ave_val = cal_scalar_error(br_baseline, m_baseline)
 
@@ -247,12 +250,12 @@ def main():
         plot_baseline(br_baseline, m_baseline)
         # plot_baseline(b_baseline, m_baseline)
     if PLOT_ALL:
-        plot_all(b_traj_cp - start_bias, m_traj, br_baseline, m_baseline, scalar, ave_val)
+        plot_all(b_traj_cp, m_traj, br_baseline, m_baseline, scalar, ave_val)
     plt.show()
 
 
 if __name__ == '__main__':
-    LOAD_MSGDATA = True
+    LOAD_MSGDATA = False
     PLOT_TRAJ = False
     PLOT_BASELINE = False
     PLOT_ALL = True

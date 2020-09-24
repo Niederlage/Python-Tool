@@ -171,7 +171,7 @@ class Msg_to_Traj:
 
         # # # Plot Line2 (Right Y Axis)
         ax2 = fig.add_subplot(122)
-        counts, bins = np.histogram(baseline)
+        counts, bins = np.histogram(baseline, bins=50)
         edges = np.delete(bins, 0)
         res = edges.dot(counts) / len(baseline)
 
@@ -184,6 +184,7 @@ class Msg_to_Traj:
         ax2.set_ylabel("frequency", color='tab:blue', fontsize=20)
         ax2.tick_params(axis='y', labelcolor='tab:blue')
         ax2.set_xlabel('baseline/m', fontsize=20)
+        ax2.set_xlim(0,1)
         # plt.ylim(0, 1)
         ax2.set_title("Distribution of Baseline", fontsize=22)
         # plt.tight_layout()
@@ -192,7 +193,9 @@ class Msg_to_Traj:
 
 if __name__ == '__main__':
     # path = 'test_simu_equirectangular_resident.msg'
-    path = 'resident_EQT_0p5.msg'
+    # path = 'resident_EQT_0p5.msg'
+    # path = 'resident_EQT_0p5_skip0_kp2000_noloop.msg'
+    path = 'uni_EQT_1200_1p05.msg'
     folderpath = 'saved_data/from_msg_data/'
     SAVE_MSG = True
     PLOT_POSE = True
@@ -208,7 +211,7 @@ if __name__ == '__main__':
 
         except:
             print('folder already exist ...')
-        np.savez_compressed(folderpath + 'saved_resident_EQT_0p5', landmarks=landmarks, keyframe_scale=keyframe_scale,
+        np.savez_compressed(folderpath + 'saved_uni_EQT_1200_1p05_skip0_kp4000_loop_s1p9', landmarks=landmarks, keyframe_scale=keyframe_scale,
                             keyframe_pose_cw=keyframe_pose_cw)
         # np.save(folderpath + 'landmarks.npy', landmarks)
         # np.save(folderpath + 'keyframe_scale.npy', keyframe_scale)
@@ -218,7 +221,7 @@ if __name__ == '__main__':
         if PLOT_ANIMATION:
             m2t.plot_animation(keyframe_undists)
 
-    load_data = np.load(folderpath + 'saved_resident_EQT_0p5.npz')
+    load_data = np.load(folderpath + 'saved_uni_EQT_1200_1p05_skip0_kp4000_loop_s1p9.npz')
     print('file loaded successfully...')
 
     if PLOT_POSE:
