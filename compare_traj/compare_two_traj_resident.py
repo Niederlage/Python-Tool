@@ -214,7 +214,7 @@ def main():
 
     # loading msg data
     if LOAD_MSGDATA:
-        load_data = np.load(msgfolderpath + 'saved_resident_EQT_0p5.npz')
+        load_data = np.load(msgfolderpath + 'saved_resident_EQT_0p5_skip0_kp2000_noloop.npz')
         print('file loaded successfully...')
         kf_pose_cw = load_data['keyframe_pose_cw']
 
@@ -234,7 +234,7 @@ def main():
     b_pose = blendertraj.csv_to_pose()
     b_traj = b_pose[:, 1:3]
     b_traj = blendertraj.rot_traj(b_traj, -np.pi * 0 / 4)  # resident pi * 0/4 #
-    b_baseline = blendertraj.cal_baseline(b_pose[:, 1:4])
+    #b_baseline = blendertraj.cal_baseline(b_pose[:, 1:4])
     start_bias = b_traj[0, :]
 
     # calculate scalar koefficient
@@ -244,7 +244,7 @@ def main():
     scalar, ave_val = cal_scalar_error(br_baseline, m_baseline)
 
     if PLOT_TRAJ:
-        plot_traj(b_traj - start_bias, m_traj)
+        plot_traj(b_traj_cp, m_traj)
 
     if PLOT_BASELINE:
         plot_baseline(br_baseline, m_baseline)
@@ -255,8 +255,8 @@ def main():
 
 
 if __name__ == '__main__':
-    LOAD_MSGDATA = False
-    PLOT_TRAJ = False
+    LOAD_MSGDATA = True
+    PLOT_TRAJ = True
     PLOT_BASELINE = False
-    PLOT_ALL = True
+    PLOT_ALL = False
     main()
